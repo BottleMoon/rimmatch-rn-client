@@ -1,7 +1,12 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, SafeAreaView } from "react-native";
-import { useEffect } from "react";
-import { Pressable } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  SafeAreaView,
+  Pressable,
+} from "react-native";
 import ActionButton from "react-native-action-button";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import RNPickerSelect from "react-native-picker-select";
@@ -115,7 +120,7 @@ export default function HomeScreen({ navigation }) {
         <RNPickerSelect
           style={pickerStyle}
           onValueChange={(value) => console.log(value)}
-          placeholder={{ label: "포지션", value: null }}
+          placeholder={{ label: "시간", value: null }}
           items={[
             { label: "Football", value: "football" },
             { label: "Baseball", value: "baseball" },
@@ -128,7 +133,7 @@ export default function HomeScreen({ navigation }) {
         <RNPickerSelect
           style={pickerStyle}
           onValueChange={(value) => console.log(value)}
-          placeholder={{ label: "기타" }}
+          placeholder={{ label: "포지션" }}
           items={[
             { label: "Football", value: "football" },
             { label: "Baseball", value: "baseball" },
@@ -147,7 +152,7 @@ export default function HomeScreen({ navigation }) {
       />
       <ActionButton
         buttonColor="skyblue"
-        onPress={() => alert("글쓰기 버튼")}
+        onPress={() => navigation.navigate("글 작성")}
       ></ActionButton>
     </SafeAreaView>
   );
