@@ -6,149 +6,366 @@ import {
   FlatList,
   SafeAreaView,
   Pressable,
+  Dimensions,
 } from "react-native";
 import ActionButton from "react-native-action-button";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import RNPickerSelect from "react-native-picker-select";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import Modal from "react-native-modal";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-let data = [];
-let place = ["서울", "부산", "대구"];
-//임시 데이터들
-for (let i = 0; i < 10000; i++) {
-  data.push({
-    id: `${i}`,
-    title: "매칭 중, 모집 번호는  " + i + "번",
-    place: place[Math.floor(Math.random() * 3)],
-  });
+const Tab = createMaterialTopTabNavigator();
+
+function getDateToString(date, isFetch) {
+  let y = date.getFullYear();
+  let m = date.getMonth() + 1;
+  let d = date.getDate();
+
+  m = m > 9 ? m : "0" + m;
+  d = d > 9 ? d : "0" + d;
+  if (isFetch) {
+    console.log("y= " + y + " m= " + m + " d= " + d);
+    console.log("" + y + m + d);
+    return "" + y + m + d;
+  } else {
+    return y + "년 " + m + "월 " + d + "일";
+  }
 }
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen name="목록" component={MatchListScreen} />
+      <Tab.Screen name="내 매칭" component={MyMatchScreen} />
+    </Tab.Navigator>
+  );
+}
+
+function MyMatchScreen({ navigation }) {
+  const [id, setId] = useState("");
   const [page, setPage] = useState(0);
   const [DATA, setDATA] = useState([]);
-  const [place, setPlace] = useState();
+  const [loading, setLoding] = useState(false);
+  const [isEnd, setIsEnd] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => _getData(), []);
+  useEffect(() => {
+    AsyncStorage.getItem("USER_ID").then((userid) => setId(userid));
+  }, []);
+  useEffect(() => {
+    if (id !== "") {
+      getData();
+    }
+  }, [id]);
+
+  useEffect(() => {
+    setPage(DATA.length);
+    setLoding(false);
+    if (refreshing === true) {
+      setRefreshing(false);
+    }
+  }, [DATA]);
+
+  const getData = () => {
+    console.log(id);
+    setLoding(true);
+    fetch("http://localhost:3000/match/list/all/all/" + id)
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.length <= DATA.length + 20) {
+          setDATA(DATA.concat(res.slice(page, res.length)));
+          setIsEnd(true);
+        } else {
+          setDATA(DATA.concat(res.slice(page, page + 20)));
+        }
+      });
+  };
+  const onRefresh = () => {
+    setRefreshing(true);
+    setLoding(true);
+    fetch("http://localhost:3000/match/list/all/all/" + id)
+      .then((res) => {
+        return res.json();
+      })
+      .then((res) => {
+        if (res.length <= 20) {
+          //데이터가 끝일 때
+          setDATA(res.slice(0, res.length));
+          setIsEnd(true);
+        } else {
+          setDATA(res.slice(0, 20));
+        }
+      });
+  };
+
+  const onEndReached = () => {
+    if (loading) {
+      return;
+    } else getData();
+  };
+
   const renderItem = ({ item }) => {
+    const date = new Date(
+      item.matchdate.substr(0, 4),
+      item.matchdate.substr(5, 2) - 1,
+      item.matchdate.substr(8, 2)
+    );
+
     return (
       <Pressable
+        style={styles.item}
         onPress={() => navigation.navigate("매칭 신청", { data: item })}
       >
-        <View style={styles.item}>
-          <Text style={{ position: "absolute", top: 10, left: 10 }}>
-            {item.place}
-          </Text>
-          <Text>{item.title}</Text>
-        </View>
+        <Text style={{ position: "absolute", top: 10, left: 10 }}>
+          {item.place}
+        </Text>
+        <Text style={{ fontSize: 20 }}>{item.title}</Text>
+        <Text>{getDateToString(date, false)}</Text>
       </Pressable>
     );
   };
 
-  //DATA에 리스트 채움
-  const _getData = (value) => {
-    if (place == value) {
-      if (value == null) {
-        let tem = [];
-        for (let i = page * 20; i < (page + 1) * 20; i++) {
-          tem.push(data[i]);
-        }
-        setDATA([...DATA, ...tem]);
-        setPage(page + 1);
-      } else {
-        let tem = [];
-        let count = 0;
-        let i = parseInt(DATA[DATA.length - 1].id) + 1;
-
-        while (true) {
-          if (data[i].place == value) {
-            tem.push(data[i]);
-            count++;
+  return (
+    <SafeAreaView>
+      <FlatList
+        style={styles.flatlist}
+        contentContainerStyle={{
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+        data={DATA}
+        renderItem={renderItem}
+        keyExtractor={(item) => item._id}
+        onEndReached={() => {
+          if (!isEnd) {
+            onEndReached();
           }
-          if (count == 20) break;
-          i++;
-        }
-        setDATA([...DATA, ...tem]);
-      }
-    } else {
-      setPlace(value);
-      setPage(0);
-      if (value == null) {
-        let tem = [];
-        for (let i = page * 20; i < (page + 1) * 20; i++) {
-          tem.push(data[i]);
-        }
-        setDATA([...tem]);
-        setPage(page + 1);
-      } else {
-        //지역 선택 됐을 때
-        let tem = [];
-        let count = 0;
-        let i = 0;
+          console.log("onReached");
+        }}
+        onRefresh={() => {
+          onRefresh();
+        }}
+        refreshing={refreshing}
+      />
+    </SafeAreaView>
+  );
+}
 
-        while (true) {
-          if (data[i].place == value) {
-            tem.push(data[i]);
-            count++;
-          }
-          if (count == 20) break;
-          i++;
-        }
-        setDATA([...tem]);
-      }
+function MatchListScreen({ navigation, route }) {
+  const [page, setPage] = useState(0);
+  const [DATA, setDATA] = useState([]);
+  const [place, setPlace] = useState("all");
+  const [date, setDate] = useState(null);
+  const [loading, setLoding] = useState(false);
+  const [isEnd, setIsEnd] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+  useEffect(() => {
+    onRefresh();
+  }, [place]);
+
+  useEffect(() => {
+    onRefresh();
+  }, [date]);
+
+  useEffect(() => {
+    setPage(DATA.length);
+    setLoding(false);
+    if (refreshing === true) {
+      setRefreshing(false);
     }
+  }, [DATA]);
+
+  const renderItem = ({ item }) => {
+    const date = new Date(
+      item.matchdate.substr(0, 4),
+      item.matchdate.substr(5, 2) - 1,
+      item.matchdate.substr(8, 2)
+    );
+
+    return (
+      <Pressable
+        style={styles.item}
+        onPress={() => navigation.navigate("매칭 신청", { data: item })}
+      >
+        <Text style={{ position: "absolute", top: 10, left: 10 }}>
+          {item.place}
+        </Text>
+        <Text style={{ fontSize: 20 }}>{item.title}</Text>
+        <Text>{getDateToString(date, false)}</Text>
+      </Pressable>
+    );
+  };
+
+  const getData = () => {
+    setLoding(true);
+    fetch(
+      `http://localhost:3000/match/list/${place}/${
+        date === null ? "all" : getDateToString(date, true)
+      }/all`
+    )
+      .then((res) => {
+        return res.json();
+      })
+      .then((res) => {
+        if (res.length <= DATA.length + 20) {
+          setDATA(DATA.concat(res.slice(page, res.length)));
+          setIsEnd(true);
+        } else {
+          setDATA(DATA.concat(res.slice(page, page + 20)));
+        }
+      });
+  };
+
+  const onEndReached = () => {
+    if (loading) {
+      return;
+    } else getData();
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setLoding(true);
+    fetch(
+      `http://localhost:3000/match/list/${place}/${
+        date === null ? "all" : getDateToString(date, true)
+      }/all`
+    )
+      .then((res) => {
+        return res.json();
+      })
+      .then((res) => {
+        if (res.length <= 20) {
+          //데이터가 끝일 때
+          setDATA(res.slice(0, res.length));
+          setIsEnd(true);
+        } else {
+          setDATA(res.slice(0, 20));
+        }
+      });
   };
 
   const angleIcon = <FontAwesome name="angle-down" style={{ left: 10 }} />;
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{ flexDirection: "row" }}>
-        <RNPickerSelect
-          style={pickerStyle}
-          onValueChange={(value) => {
-            _getData(value);
-          }}
-          placeholder={{ label: "지역", value: null }}
-          items={[
-            { label: "서울", value: "서울" },
-            { label: "부산", value: "부산" },
-            { label: "대구", value: "대구" },
-          ]}
-          Icon={() => {
-            return <FontAwesome name="angle-down" style={styles.icon} />;
-          }}
-        />
-        <RNPickerSelect
-          style={pickerStyle}
-          onValueChange={(value) => console.log(value)}
-          placeholder={{ label: "시간", value: null }}
-          items={[
-            { label: "Football", value: "football" },
-            { label: "Baseball", value: "baseball" },
-            { label: "Hockey", value: "hockey" },
-          ]}
-          Icon={() => {
-            return <FontAwesome name="angle-down" style={styles.icon} />;
-          }}
-        />
-        <RNPickerSelect
-          style={pickerStyle}
-          onValueChange={(value) => console.log(value)}
-          placeholder={{ label: "포지션" }}
-          items={[
-            { label: "Football", value: "football" },
-            { label: "Baseball", value: "baseball" },
-            { label: "Hockey", value: "hockey" },
-          ]}
-          Icon={() => {
-            return <FontAwesome name="angle-down" style={styles.icon} />;
-          }}
-        />
-      </View>
+      {
+        <View style={{ flexDirection: "row" }}>
+          <RNPickerSelect
+            style={pickerStyle}
+            onValueChange={(value) => {
+              setPlace(value);
+            }}
+            placeholder={{ label: "전국", value: "all" }}
+            items={[
+              { label: "서울", value: "서울" },
+              { label: "부산", value: "부산" },
+              { label: "대구", value: "대구" },
+            ]}
+            Icon={() => {
+              return <FontAwesome name="angle-down" style={styles.icon} />;
+            }}
+          />
+          <Pressable
+            style={{
+              justifyContent: "center",
+              height: 30,
+              width: Dimensions.get("window").width * 0.4,
+              borderRadius: 10,
+              backgroundColor: "white",
+              margin: 11,
+              marginBottom: 3,
+              paddingLeft: 10,
+            }}
+            onPress={() => setModalVisible(true)}
+          >
+            {date === null ? (
+              <Text>시간</Text>
+            ) : (
+              <Text>{getDateToString(date, false)}</Text>
+            )}
+          </Pressable>
+          <Modal
+            style={{ alignItems: "center" }}
+            animationIn="slideInUp"
+            isVisible={modalVisible}
+          >
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+                backgroundColor: "white",
+                borderRadius: 20,
+              }}
+            >
+              <DateTimePicker
+                testID="dateTimePicker"
+                style={{ width: "100%", height: "60%" }}
+                mode="date"
+                value={date === null ? new Date() : date}
+                onChange={(event, date) => {
+                  setDate(
+                    new Date(
+                      date.getFullYear(),
+                      date.getMonth(),
+                      date.getDate()
+                    )
+                  );
+                }}
+                display="spinner"
+              />
+              <View style={{ flexDirection: "row" }}>
+                <Pressable
+                  style={styles.btn_modal}
+                  onPress={() => {
+                    setDate(null);
+                    setModalVisible(false);
+                  }}
+                >
+                  <Text>전체</Text>
+                </Pressable>
+
+                <Pressable
+                  style={styles.btn_modal}
+                  onPress={() => {
+                    setModalVisible(false);
+                  }}
+                >
+                  <Text>선택</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      }
       <FlatList
+        style={styles.flatlist}
+        contentContainerStyle={{
+          justifyContent: "center",
+          alignItems: "center",
+        }}
         data={DATA}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        onEndReached={() => _getData(place)}
+        keyExtractor={(item) => item._id}
+        onEndReached={() => {
+          if (!isEnd) {
+            onEndReached();
+          }
+          console.log("onReached");
+        }}
+        onRefresh={() => {
+          onRefresh();
+        }}
+        refreshing={refreshing}
       />
       <ActionButton
         buttonColor="skyblue"
@@ -165,21 +382,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   item: {
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "white",
-    paddingHorizontal: 100,
-    paddingVertical: 20,
-    margin: 10,
     borderRadius: 10,
+    margin: 5,
+    width: Dimensions.get("window").width * 0.9,
+    height: Dimensions.get("window").height * 0.1,
   },
   icon: {
     top: 19,
     right: 20,
   },
+  flatlist: { width: "100%", height: "100%" },
+  btn_modal: {
+    backgroundColor: "skyblue",
+    padding: 10,
+    marginHorizontal: 50,
+    borderRadius: 10,
+  },
 });
 const pickerStyle = {
   inputIOS: {
     height: 30,
-    width: 103,
+    width: Dimensions.get("window").width * 0.4,
     borderRadius: 10,
     backgroundColor: "white",
     margin: 11,

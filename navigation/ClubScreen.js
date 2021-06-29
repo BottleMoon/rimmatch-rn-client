@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { View, Text, StyleSheet } from "react-native";
 import ActionButton from "react-native-action-button";
-import { BackgroundImage } from "react-native-elements/dist/config";
 import { FlatList, TextInput } from "react-native-gesture-handler";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+
+const Tab = createMaterialTopTabNavigator();
 
 let data = [];
 
@@ -25,8 +27,30 @@ for (let i = 0; i < 10000; i++) {
     members: x,
   });
 }
-
 export default function ClubScreen() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen name="리스트" component={ClubListScreen} />
+      <Tab.Screen name="내 동호회" component={MyClubScreen} />
+    </Tab.Navigator>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  item: {
+    backgroundColor: "white",
+    width: "100%",
+    height: 80,
+    marginVertical: 1,
+  },
+});
+
+const ClubListScreen = () => {
   const [DATA, setDATA] = useState([]);
   const [page, setPage] = useState(0);
 
@@ -45,7 +69,6 @@ export default function ClubScreen() {
   };
 
   useEffect(() => _getData(), []);
-
   return (
     <View style={styles.container}>
       <FlatList
@@ -58,18 +81,12 @@ export default function ClubScreen() {
       <ActionButton></ActionButton>
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  item: {
-    backgroundColor: "white",
-    width: "100%",
-    height: 80,
-    marginVertical: 1,
-  },
-});
+const MyClubScreen = () => {
+  return (
+    <View>
+      <Text>내 동호회 </Text>
+    </View>
+  );
+};

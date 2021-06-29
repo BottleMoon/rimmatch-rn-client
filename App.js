@@ -1,17 +1,20 @@
-import React, { useState } from "react";
-import { StyleSheet } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { StyleSheet, View, Text, Image } from "react-native";
 import {
   getFocusedRouteNameFromRoute,
   NavigationContainer,
 } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import MainTabs from "./navigation/MainTabs";
-import Login from "./Login";
 import MatchApply from "./matching/MatchApply";
 import { Pressable } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import WriteScreen from "./matching/WriteScreen";
-import SignUp from "./SignUp";
+import MatchMakingScreen from "./matching/MatchMakingScreen";
+import LoginScreen from "./LoginScreen";
+import SignupScreen from "./SignupScreen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import ProfileScreen from "./profile/ProfileScreen";
+
 const Stack = createStackNavigator();
 const Icons = Ionicons;
 
@@ -19,15 +22,35 @@ function getHeaderTitle(route) {
   const routeName = getFocusedRouteNameFromRoute(route) ?? "Home";
   return routeName;
 }
-export default function App() {
-  const [logined, setLogined] = useState(false);
 
+export default function App() {
+  const [isAppReady, setIsAppReady] = useState(false);
+  const [logined, setLogined] = useState(false);
+  const [id, setId] = useState();
+  useEffect(() => {
+    AsyncStorage.getItem("user_id")
+      .then((value) => (value === null ? setLogined(false) : setLogined(true)))
+      .then(() =>
+        setTimeout(() => {
+          setIsAppReady(() => !isAppReady);
+        }, 3000)
+      );
+  }, []);
+
+  if (!isAppReady)
+    return (
+      <View style={{ flex: 1 }}>
+        <Image
+          style={{ height: "100%", width: "100%" }}
+          source={require("./assets/AppBackGround2.jpeg")}
+        />
+      </View>
+    );
   return logined ? (
     <NavigationContainer styles={styles.navigator}>
       <Stack.Navigator>
         <Stack.Screen
           name="Home"
-          component={MainTabs}
           options={({ route }) => ({
             headerTitle: getHeaderTitle(route),
             headerRight: () => (
@@ -47,14 +70,36 @@ export default function App() {
               </Pressable>
             ),
           })}
-        />
+        >
+          {(props) => <MainTabs {...props} action={(x) => setLogined(x)} />}
+        </Stack.Screen>
         <Stack.Screen name="매칭 신청" component={MatchApply} />
-        <Stack.Screen name="글 작성" component={WriteScreen} />
-        <Stack.Screen name="회원가입" component={SignUp} />
+        <Stack.Screen name="글 작성" component={MatchMakingScreen} />
+        <Stack.Screen name="회원가입" component={SignupScreen} />
+        <Stack.Screen name="프로필" component={ProfileScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   ) : (
-    <Login action={setLogined} />
+    <NavigationContainer style={styles.navigator}>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="로그인"
+          options={{
+            headerShown: false,
+          }}
+        >
+          {(props) => <LoginScreen {...props} action={(x) => setLogined(x)} />}
+        </Stack.Screen>
+
+        <Stack.Screen
+          name="회원가입"
+          component={SignupScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 

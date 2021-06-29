@@ -3,13 +3,13 @@ import { StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreen from "./HomeScreen";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import ProfileScreen from "./ProfileScreen";
+import MyPageScreen from "./MyPageScreen.js";
 import ClubScreen from "./ClubScreen";
 import CommunityScreen from "./CommunityScreen";
 
 const Tab = createBottomTabNavigator();
 
-export default function MainTabs({ navigation }) {
+export default function MainTabs({ navigation, action }) {
   return (
     <Tab.Navigator style={styles.navigator} initialRouteName="Home">
       <Tab.Screen
@@ -18,7 +18,6 @@ export default function MainTabs({ navigation }) {
         options={{
           tabBarLabel: "Home",
           tabBarIcon: () => <Ionicons name="home" color="grey" size={25} />,
-          tabBarBadge: 3,
         }}
       />
       <Tab.Screen
@@ -38,15 +37,16 @@ export default function MainTabs({ navigation }) {
         }}
       />
       <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
+        name="MyPage"
         options={{
-          tabBarLabel: "Profile",
+          tabBarLabel: "MyPage",
           tabBarIcon: () => (
             <Ionicons name="ellipsis-horizontal" color="grey" size={25} />
           ),
         }}
-      />
+      >
+        {(props) => <MyPageScreen {...props} action={(x) => action(x)} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }

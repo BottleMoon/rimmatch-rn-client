@@ -1,19 +1,33 @@
-import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useState } from "react";
+import { Alert } from "react-native";
+import { FlatList } from "react-native";
 import { Pressable } from "react-native";
 import { View, Text, StyleSheet } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-const PressableMenu = ({ i }) => {
+const PressableMenu = ({
+  name = "메뉴",
+  iconName = "location-outline",
+  onPress = () => {},
+}) => {
   return (
     <Pressable
+      onPress={() => onPress()}
       style={{ flexDirection: "row", alignItems: "center", marginLeft: 20 }}
     >
-      <Ionicons name="location-outline" size={30} />
-      <Text style={styles.menu}>메뉴 {i}</Text>
+      <Ionicons name={iconName} size={30} />
+      <Text style={styles.menu}>{name}</Text>
     </Pressable>
   );
 };
-export default function ProfileScreen() {
+export default function MyPageScreen({ navigation, action }) {
+  const [id, setId] = useState("");
+
+  AsyncStorage.getItem("USER_ID").then((value) => {
+    setId(value);
+  });
+
   return (
     <View style={styles.container}>
       <View style={styles.profile}>
@@ -37,7 +51,7 @@ export default function ProfileScreen() {
             right: 10,
           }}
         >
-          <Text style={{ fontSize: 20 }}>{"회원 1\n sdf"}</Text>
+          <Text style={{ fontSize: 20 }}>{id}</Text>
         </Pressable>
         <Pressable
           style={{
@@ -52,6 +66,9 @@ export default function ProfileScreen() {
             left: "5%",
             alignItems: "center",
             justifyContent: "center",
+          }}
+          onPress={() => {
+            navigation.navigate("프로필");
           }}
         >
           <Text>프로필 보기</Text>
@@ -100,7 +117,22 @@ export default function ProfileScreen() {
         <PressableMenu />
         <PressableMenu />
         <PressableMenu />
-        <PressableMenu />
+        <PressableMenu
+          name="로그아웃"
+          iconName="log-out-outline"
+          onPress={() => {
+            AsyncStorage.removeItem("USER_ID");
+            Alert.alert("정말 로그아웃 하시겠습니까?", "", [
+              { text: "아니오", onPress: () => {}, styles: "cancel" },
+              {
+                text: "로그아웃",
+                onPress: () => {
+                  action(false);
+                },
+              },
+            ]);
+          }}
+        />
       </View>
     </View>
   );
