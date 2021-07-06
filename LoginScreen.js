@@ -29,31 +29,35 @@ export default function Login({ navigation, action }) {
           margin: 20,
         }}
         onPress={() => {
-          fetch("http://localhost:3000/login", {
-            method: "post",
-            headers: {
-              "Content-Type": "application/json;charset=utf-8",
-            },
-            body: JSON.stringify({
-              id: id,
-              password: password,
-            }),
-          })
-            .then((res) => {
-              return res.text();
+          if (id === "" || password === "") {
+            alert("아이디와 비밀번호는 필수 입력사항입니다.");
+          } else {
+            fetch("http://localhost:3000/login", {
+              method: "post",
+              headers: {
+                "Content-Type": "application/json;charset=utf-8",
+              },
+              body: JSON.stringify({
+                id: id,
+                password: password,
+              }),
             })
-            .then((data) => {
-              console.log(data);
-              if (data === "fail") {
-                alert("아이디 혹은 비밀번호가 일치하지 않습니다.");
-              } else {
-                AsyncStorage.setItem("LOGIN_TOKEN", data);
-                AsyncStorage.setItem("USER_ID", id);
-                alert("로그인 성공");
+              .then((res) => {
+                return res.text();
+              })
+              .then((data) => {
+                console.log(data);
+                if (data === "fail") {
+                  alert("아이디 혹은 비밀번호가 일치하지 않습니다.");
+                } else {
+                  AsyncStorage.setItem("LOGIN_TOKEN", data);
+                  AsyncStorage.setItem("USER_ID", id);
+                  alert("로그인 성공");
 
-                action(true);
-              }
-            });
+                  action(true);
+                }
+              });
+          }
         }}
       >
         <Text style={{ color: "white", fontSize: 20 }}>로그인</Text>

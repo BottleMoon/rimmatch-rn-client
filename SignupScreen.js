@@ -55,30 +55,34 @@ export default function SignUp({ navigation }) {
       <Button
         title="회원가입"
         onPress={() => {
-          fetch("http://localhost:3000/signup", {
-            method: "post",
-            headers: {
-              "Content-Type": "application/json;charset=utf-8",
-            },
-            body: JSON.stringify({
-              id: id,
-              password: password,
-              age: age,
-              height: height,
-              address: address,
-            }),
-          })
-            .then((res) => {
-              return res.json();
+          if (id === "" || password === "") {
+            alert("아이디와 비밀번호는 필수 입력입니다.");
+          } else {
+            fetch("http://localhost:3000/signup", {
+              method: "post",
+              headers: {
+                "Content-Type": "application/json;charset=utf-8",
+              },
+              body: JSON.stringify({
+                id: id,
+                password: password,
+                age: age,
+                height: height,
+                address: address,
+              }),
             })
-            .then((res) => {
-              if (res.success) {
-                alert("회원가입 성공");
-                navigation.navigate("로그인");
-              } else {
-                alert("이미 아이디가 존재합니다.");
-              }
-            });
+              .then((res) => {
+                return res.json();
+              })
+              .then((res) => {
+                if (res.success) {
+                  alert("회원가입 성공");
+                  navigation.navigate("로그인");
+                } else {
+                  alert("이미 아이디가 존재합니다.");
+                }
+              });
+          }
         }}
       />
     </View>
