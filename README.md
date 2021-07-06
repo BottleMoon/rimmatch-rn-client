@@ -5,17 +5,17 @@
 --- 
 
 ### 회원가입
-<img width="40%" src='/Users/gwonbj/Work/Capstone/app/gif/Screen Recording 2021-07-06 at 10.59.29 AM.gif'>
+<img width="40%" src='./gif/Screen Recording 2021-07-06 at 10.59.29 AM.gif'>
 <br/><br/>
 
 ### 로그인
-<img width="40%" src='/Users/gwonbj/Work/Capstone/app/gif/Screen Recording 2021-07-06 at 11.23.00 AM.gif'>
+<img width="40%" src='./gif/Screen Recording 2021-07-06 at 11.23.00 AM.gif'>
 <br/><br/>
 
 ### 매칭 리스트
-<img width="40%" src='/Users/gwonbj/Work/Capstone/app/gif/Screen Recording 2021-07-06 at 2.23.24 PM.gif'>
+<img width="40%" src='./gif/Screen Recording 2021-07-06 at 2.23.24 PM.gif'>
 <br/><br/>
 
 ### 매칭 신청
-<img width="40%" src='/Users/gwonbj/Work/Capstone/app/gif/Screen Recording 2021-07-06 at 2.24.39 PM.gif'>
+<img width="40%" src='./gif/Screen Recording 2021-07-06 at 2.24.39 PM.gif'>
 
