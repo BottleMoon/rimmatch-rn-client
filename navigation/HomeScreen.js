@@ -37,8 +37,8 @@ function getDateToString(date, isFetch) {
 export default function HomeScreen() {
   return (
     <Tab.Navigator>
-      <Tab.Screen name="목록" component={MatchListScreen} />
-      <Tab.Screen name="내 매칭" component={MyMatchScreen} />
+      <Tab.Screen name="리스트" component={MatchListScreen} />
+      <Tab.Screen name="내 매치" component={MyMatchScreen} />
     </Tab.Navigator>
   );
 }
@@ -117,7 +117,7 @@ function MyMatchScreen({ navigation }) {
     return (
       <Pressable
         style={styles.item}
-        onPress={() => navigation.navigate("매칭 신청", { data: item })}
+        onPress={() => navigation.navigate("MatchApply", { data: item })}
       >
         <Text style={{ position: "absolute", top: 10, left: 10 }}>
           {item.place}
@@ -194,7 +194,7 @@ function MatchListScreen({ navigation, route }) {
     return (
       <Pressable
         style={styles.item}
-        onPress={() => navigation.navigate("매칭 신청", { data: item })}
+        onPress={() => navigation.navigate("MatchApply", { data: item })}
       >
         <Text style={{ position: "absolute", top: 10, left: 10 }}>
           {item.place}
@@ -225,12 +225,6 @@ function MatchListScreen({ navigation, route }) {
       });
   };
 
-  const onEndReached = () => {
-    if (loading) {
-      return;
-    } else getData();
-  };
-
   const onRefresh = () => {
     setRefreshing(true);
     setLoding(true);
@@ -239,9 +233,7 @@ function MatchListScreen({ navigation, route }) {
         date === null ? "all" : getDateToString(date, true)
       }/all`
     )
-      .then((res) => {
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((res) => {
         if (res.length <= 20) {
           //데이터가 끝일 때
@@ -357,8 +349,8 @@ function MatchListScreen({ navigation, route }) {
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
         onEndReached={() => {
-          if (!isEnd) {
-            onEndReached();
+          if (!isEnd && !loading) {
+            getData();
           }
           console.log("onReached");
         }}
@@ -369,7 +361,7 @@ function MatchListScreen({ navigation, route }) {
       />
       <ActionButton
         buttonColor="skyblue"
-        onPress={() => navigation.navigate("글 작성")}
+        onPress={() => navigation.navigate("CreateMatch")}
       ></ActionButton>
     </SafeAreaView>
   );

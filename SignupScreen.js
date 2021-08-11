@@ -77,7 +77,7 @@ export default function SignUp({ navigation }) {
               .then((res) => {
                 if (res.success) {
                   alert("회원가입 성공");
-                  navigation.navigate("로그인");
+                  navigation.navigate("Login");
                 } else {
                   alert("이미 아이디가 존재합니다.");
                 }

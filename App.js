@@ -14,6 +14,7 @@ import LoginScreen from "./LoginScreen";
 import SignupScreen from "./SignupScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ProfileScreen from "./profile/ProfileScreen";
+import ClubCreateScreen from "./club/ClubCreateScreen";
 
 const Stack = createStackNavigator();
 const Icons = Ionicons;
@@ -73,17 +74,18 @@ export default function App() {
         >
           {(props) => <MainTabs {...props} action={(x) => setLogined(x)} />}
         </Stack.Screen>
-        <Stack.Screen name="매칭 신청" component={MatchApply} />
-        <Stack.Screen name="글 작성" component={MatchMakingScreen} />
-        <Stack.Screen name="회원가입" component={SignupScreen} />
-        <Stack.Screen name="프로필" component={ProfileScreen} />
+        <Stack.Screen name="MatchApply" component={MatchApply} />
+        <Stack.Screen name="CreateMatch" component={MatchMakingScreen} />
+        <Stack.Screen name="Signup" component={SignupScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="CreateClub" component={ClubCreateScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
   ) : (
     <NavigationContainer style={styles.navigator}>
       <Stack.Navigator>
         <Stack.Screen
-          name="로그인"
+          name="Login"
           options={{
             headerShown: false,
           }}
@@ -92,7 +94,7 @@ export default function App() {
         </Stack.Screen>
 
         <Stack.Screen
-          name="회원가입"
+          name="Signup"
           component={SignupScreen}
           options={{
             headerShown: false,

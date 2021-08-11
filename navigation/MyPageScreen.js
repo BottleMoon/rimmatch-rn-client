@@ -68,7 +68,7 @@ export default function MyPageScreen({ navigation, action }) {
             justifyContent: "center",
           }}
           onPress={() => {
-            navigation.navigate("프로필");
+            navigation.navigate("Profile");
           }}
         >
           <Text>프로필 보기</Text>

@@ -64,7 +64,7 @@ export default function Login({ navigation, action }) {
       </Pressable>
       <Text>
         아직 계정이 없으신가요?{" "}
-        <Pressable onPress={() => navigation.navigate("회원가입")}>
+        <Pressable onPress={() => navigation.navigate("Signup")}>
           <Text style={{ color: "#0066cc", top: 1 }}>회원가입</Text>
         </Pressable>
       </Text>
